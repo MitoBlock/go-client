@@ -1,6 +1,11 @@
 package main
 
 import (
+
+    "net/http"
+//	"errors"
+	"github.com/gin-gonic/gin"
+
     "context"
     "fmt"
     "log"
@@ -12,52 +17,78 @@ import (
     "mitoblockchaindev/x/mitoblockchaindev/types"
 )
 
-func main() {
-    // Prefix to use for account addresses.
-    // The address prefix was assigned to the blog blockchain
-    // using the `--address-prefix` flag during scaffolding.
-    addressPrefix := "mito"
 
-    // Create a Cosmos client instance
-    cosmos, err := cosmosclient.New(
+type book struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Author   string `json:"author"`
+	Quantity int    `json:"quantity"`
+}
+
+var books = []book{
+	{ID: "1", Title: "In Search of Lost Time", Author: "Marcel Proust", Quantity: 2},
+	{ID: "2", Title: "The Great Gatsby", Author: "F. Scott Fitzgerald", Quantity: 5},
+	{ID: "3", Title: "War and Peace", Author: "Leo Tolstoy", Quantity: 6},
+}
+
+    var addressPrefix = "mito"
+
+    var cosmos, err = cosmosclient.New(
         context.Background(),
         cosmosclient.WithAddressPrefix(addressPrefix),
     )
-    if err != nil {
-        log.Fatal(err)
-    }
 
     // Account `alice` was initialized during `ignite chain serve`
-    accountName := "alice"
+    var accountName = "alice"
 
     // Get account from the keyring
-    account, err := cosmos.Account(accountName)
-    if err != nil {
+    var account, accounterr = cosmos.Account(accountName)
+
+    var addr, addresserr = account.Address(addressPrefix)
+
+    // Instantiate a query client for the blockchain
+    var queryClient = types.NewQueryClient(cosmos.Context())
+
+
+
+func getBooks(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, books)
+}
+
+
+func getTokens(c *gin.Context) {
+
+    // Query the blockchain using the client's `DiscountTokens` method
+    // to get all tokens store all tokens in queryResp
+    queryResp, qerr := queryClient.DiscountTokens(context.Background(), &types.QueryDiscountTokensRequest{})
+    if qerr != nil {
         log.Fatal(err)
     }
 
-    addr, err := account.Address(addressPrefix)
-    if err != nil {
-        log.Fatal(err)
-    }
+    // Print response from querying all the tokens
+    fmt.Print("\n\nAll tokens:\n\n")
+    // fmt.Println(queryResp)
 
-    // Define a message to create a discount token
-    msg := &types.MsgCreateDiscountToken{
+    fmt.Print((queryResp.GetDiscountToken))
+	c.IndentedJSON(http.StatusOK, queryResp)
+}
+
+
+func createMembershipToken(c *gin.Context) {
+    // msg := &types.MsgCreateDiscountToken{
+    msg := &types.MsgCreateMembershipToken{
         Creator: addr,
-		Timestamp: "timestamp",
-		ActivityName:      "ActivityName",
-		Score:             "Score",
-		Message:           "Message",
-		DiscountValue:     "DiscountValue",
-		EligibleCompanies: "EligibleCompanies",
-		ItemType:          "ItemType",
-		ExpiryDate:        "ExpiryDate",
+	 	Timestamp: "timestamp",
+        ActivityName:      "Weekly leaderboard",
+        Score:             "10",
+        Message:           "Impresionante",
+        MembershipDuration:     "3",
+        ExpiryDate:        "5th Dec 2022",
     }
-
     // Broadcast a transaction from account `alice` with the message
     // to create a post store response in txResp
-    txResp, err := cosmos.BroadcastTx(account, msg)
-    if err != nil {
+    txResp, transerr := cosmos.BroadcastTx(account, msg)
+    if transerr != nil {
         log.Fatal(err)
     }
 
@@ -65,17 +96,67 @@ func main() {
     fmt.Print("MsgCreateDiscountToken:\n\n")
     fmt.Println(txResp)
 
-    // Instantiate a query client for the blockchain
-    queryClient := types.NewQueryClient(cosmos.Context())
+	c.IndentedJSON(http.StatusOK, txResp)
 
-    // Query the blockchain using the client's `DiscountTokens` method
-    // to get all tokens store all tokens in queryResp
-    queryResp, err := queryClient.DiscountTokens(context.Background(), &types.QueryDiscountTokensRequest{})
+}
+
+func createDiscountToken(c *gin.Context) {
+
+        // Define a message to create a discount token
+    // msg := &types.MsgCreateDiscountToken{
+    //     Creator: addr,
+	// 	Timestamp: "timestamp",
+	// 	ActivityName:      "ActivityName",
+	// 	Score:             "Score",
+	// 	Message:           "Message",
+	// 	DiscountValue:     "DiscountValue",
+	// 	EligibleCompanies: "EligibleCompanies",
+	// 	ItemType:          "ItemType",
+	// 	ExpiryDate:        "ExpiryDate",
+    // }
+        // Define a message to create a discount token
+    msg := &types.MsgCreateDiscountToken{
+        Creator: addr,
+	 	Timestamp: "timestamp",
+        ActivityName:      "Learn to make tacos",
+        Score:             "10",
+        Message:           "Excelente",
+        DiscountValue:     "5",
+        ItemType:          "protein burrito cooking class",
+        ExpiryDate:        "5th Dec 2022",
+    }
+
+    // Broadcast a transaction from account `alice` with the message
+    // to create a post store response in txResp
+    txResp, transerr := cosmos.BroadcastTx(account, msg)
+    if transerr != nil {
+        log.Fatal(err)
+    }
+
+    // Print response from broadcasting a transaction
+    fmt.Print("MsgCreateDiscountToken:\n\n")
+    fmt.Println(txResp)
+
+	c.IndentedJSON(http.StatusOK, txResp)
+}
+
+func main() {
     if err != nil {
         log.Fatal(err)
     }
 
-    // Print response from querying all the tokens
-    fmt.Print("\n\nAll tokens:\n\n")
-    fmt.Println(queryResp)
+    if accounterr != nil {
+        log.Fatal(accounterr)
+    }
+
+    if addresserr != nil {
+        log.Fatal(addresserr)
+    }
+
+    router := gin.Default()
+	router.GET("/books", getBooks)
+    router.GET("/token", createDiscountToken)
+    router.GET("/tokens", getTokens)
+	router.Run("localhost:8080")
+
 }
