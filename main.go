@@ -18,6 +18,25 @@ import (
 )
 
 
+func CORSMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+
+        c.Header("Access-Control-Allow-Origin", "*")
+        c.Header("Access-Control-Allow-Credentials", "true")
+        c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+        c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+
+        c.Next()
+    }
+}
+
+
+
 type book struct {
 	ID       string `json:"id"`
 	Title    string `json:"title"`
@@ -74,7 +93,7 @@ func getTokens(c *gin.Context) {
 }
 
 
-func createMembershipToken(c *gin.Context) {
+func createDiscountMembershipToken(c *gin.Context) {
     // msg := &types.MsgCreateDiscountToken{
     msg := &types.MsgCreateMembershipToken{
         Creator: addr,
@@ -93,14 +112,18 @@ func createMembershipToken(c *gin.Context) {
     }
 
     // Print response from broadcasting a transaction
-    fmt.Print("MsgCreateDiscountToken:\n\n")
+    fmt.Print("MsgCreateMemberToken:\n\n")
     fmt.Println(txResp)
 
 	c.IndentedJSON(http.StatusOK, txResp)
 
 }
 
-func createDiscountToken(c *gin.Context) {
+
+
+// func createDiscountToken(c *gin.Context) {
+
+func createDiscountBurritoToken(c *gin.Context) {
 
         // Define a message to create a discount token
     // msg := &types.MsgCreateDiscountToken{
@@ -154,9 +177,13 @@ func main() {
     }
 
     router := gin.Default()
+    router.Use(CORSMiddleware())
+
 	router.GET("/books", getBooks)
-    router.GET("/token", createDiscountToken)
+    // router.GET("/token", createDiscountToken)
     router.GET("/tokens", getTokens)
+    router.GET("/discountBurritoToken", createDiscountBurritoToken)
+    router.GET("/discountMembershipToken", createDiscountMembershipToken)
 	router.Run("localhost:8080")
 
 }
