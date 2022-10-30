@@ -74,6 +74,10 @@ func getBooks(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, books)
 }
 
+func getUser(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, addr)
+}
+
 
 func getTokens(c *gin.Context) {
 
@@ -182,6 +186,7 @@ func main() {
 	router.GET("/books", getBooks)
     // router.GET("/token", createDiscountToken)
     router.GET("/tokens", getTokens)
+    router.GET("/user", getUser)
     router.GET("/discountBurritoToken", createDiscountBurritoToken)
     router.GET("/discountMembershipToken", createDiscountMembershipToken)
 	router.Run("localhost:8080")
