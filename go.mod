@@ -3,6 +3,7 @@ module goclient
 go 1.18
 
 require (
+	github.com/gin-gonic/gin v1.8.1
 	github.com/ignite/cli v0.24.0
 	mitoblockchaindev v0.0.0-00010101000000-000000000000
 )
@@ -42,7 +43,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
