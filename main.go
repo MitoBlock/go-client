@@ -17,7 +17,7 @@ import (
     "mitoblockchaindev/x/mitoblockchaindev/types"
 )
 
-
+// middleware to allow incoming requests from all ports
 func CORSMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
 
@@ -26,17 +26,20 @@ func CORSMiddleware() gin.HandlerFunc {
         c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
         c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
 
+        // we do not allow options
         if c.Request.Method == "OPTIONS" {
             c.AbortWithStatus(204)
             return
         }
 
+        // forward request to next handler
         c.Next()
     }
 }
 
 
 
+// temp data for testing purposes only
 type book struct {
 	ID       string `json:"id"`
 	Title    string `json:"title"`
@@ -44,6 +47,7 @@ type book struct {
 	Quantity int    `json:"quantity"`
 }
 
+// temp data for testing purposes only
 var books = []book{
 	{ID: "1", Title: "In Search of Lost Time", Author: "Marcel Proust", Quantity: 2},
 	{ID: "2", Title: "The Great Gatsby", Author: "F. Scott Fitzgerald", Quantity: 5},
@@ -96,6 +100,32 @@ func getTokens(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, queryResp)
 }
 
+// TODO: test endpoint to confirm changing of status
+func queryStatusById(c *gin.Context) {
+    id := c.Param("id")
+    fmt.Print("id is: ", id)
+
+    fmt.Print("into the status endpoit")
+     msg := &types.MsgCreateDiscountTokenStatus{
+         Status: "unclaimed",
+         TokenID: 1,
+         Creator: addr,
+     }
+
+    // to create a post request to update status ..store response in txResp
+    txResp, transerr := cosmos.BroadcastTx(account, msg)
+    if transerr != nil {
+        fmt.Print("oops!")
+        log.Fatal(transerr)
+    }
+
+    // Print response from broadcasting a transaction
+    fmt.Print("Changed status of token id 1:\n\n")
+    fmt.Println(txResp)
+
+	c.IndentedJSON(http.StatusOK, txResp)
+}
+
 
 func createDiscountMembershipToken(c *gin.Context) {
     // msg := &types.MsgCreateDiscountToken{
@@ -112,7 +142,7 @@ func createDiscountMembershipToken(c *gin.Context) {
     // to create a post store response in txResp
     txResp, transerr := cosmos.BroadcastTx(account, msg)
     if transerr != nil {
-        log.Fatal(err)
+        log.Fatal(transerr)
     }
 
     // Print response from broadcasting a transaction
@@ -157,7 +187,7 @@ func createDiscountBurritoToken(c *gin.Context) {
     // to create a post store response in txResp
     txResp, transerr := cosmos.BroadcastTx(account, msg)
     if transerr != nil {
-        log.Fatal(err)
+        log.Fatal(transerr)
     }
 
     // Print response from broadcasting a transaction
@@ -189,6 +219,7 @@ func main() {
     router.GET("/user", getUser)
     router.GET("/discountBurritoToken", createDiscountBurritoToken)
     router.GET("/discountMembershipToken", createDiscountMembershipToken)
+    router.GET("/status/:id", queryStatusById)
 	router.Run("localhost:8080")
 
 }
