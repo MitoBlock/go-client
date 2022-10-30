@@ -58,7 +58,7 @@ var books = []book{
     )
 
     // Account `alice` was initialized during `ignite chain serve`
-    var accountName = "alice"
+    var accountName = "bob"
 
     // Get account from the keyring
     var account, accounterr = cosmos.Account(accountName)
