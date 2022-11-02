@@ -36,185 +36,256 @@ func CORSMiddleware() gin.HandlerFunc {
     }
 }
 
-// Prefix to use for account addresses.
-    // The address prefix was assigned to the blog blockchain
-    // using the `--address-prefix` flag during scaffolding.
-    var addressPrefix = "mito"
+var addressPrefix = "mito"
 
-    // Create a Cosmos client instance
-    var cosmos, err = cosmosclient.New(
-        context.Background(),
-        cosmosclient.WithAddressPrefix(addressPrefix),
-    )
+   
+var cosmos, err = cosmosclient.New(
+    context.Background(),
+    cosmosclient.WithAddressPrefix(addressPrefix),
+)
 
-    // Account `bob` was initialized during `ignite chain serve`
-    var accountName = "bob"
+var accountName = "bob"
+  
+var account, accounterr = cosmos.Account(accountName)
 
-    // Get account from the keyring
-    var account, accounterr = cosmos.Account(accountName)
-
-    var addr, addrerr = account.Address(addressPrefix)
+var addr, addrerr = account.Address(addressPrefix)
 	
-	var queryClient = types.NewQueryClient(cosmos.Context())
+var queryClient = types.NewQueryClient(cosmos.Context())
+
+// discount token from angular
+type discountToken struct {
+	Timestamp         string `json:"timestamp"`
+	ActivityName      string `json:"activity_name"`
+	Score             string `json:"score"`
+	Message           string `json:"message"`
+	DiscountValue     string `json:"discount_value"`
+	EligibleCompanies string `json:"eligible_companies"`
+	ItemType          string `json:"item_type"`
+	ExpiryDate        string `json:"expiry_date"`
+}
+
+// discount token status from angular
+type DiscountTokenStatus struct {
+	TokenID   uint64 `json:"token_id"`
+	ID        uint64 `json:"id"`
+	Timestamp string `json:"timestamp"`
+}
+
+// membership token from angular
+type membershipToken struct {
+	Timestamp          string `json:"timestamp"`
+	ActivityName       string `json:"activity_name"`
+	Score              string `json:"score"`
+	Message            string `json:"message"`
+	MembershipDuration string `json:"membership_duration"`
+	EligibleCompanies  string `json:"eligible_companies"`
+	ExpiryDate         string `json:"expiry_date"`
+}
+
+// membership token status from angular
+type MembershipTokenStatus struct {
+	TokenID   uint64 `json:"token_id"`
+	ID        uint64 `json:"id"`
+	Timestamp string `json:"timestamp"`
+}
+
+var tokens = []discountToken{
+	{
+		Timestamp:         "timestamp",
+		ActivityName:      "activity_name",
+		Score:             "10",
+		Message:           "message",
+		DiscountValue:     "discount_value",
+		EligibleCompanies: "eligible_companies",
+		ItemType:          "item_type",
+		ExpiryDate:        "expiry_date",
+	},
+}
 
 func createMembershipToken(c *gin.Context) {
-    
-    msg := &types.MsgCreateMembershipToken{
-        Creator:           addr,
-	 	Timestamp:         "2 NOv 2022",
-        ActivityName:      "Weekly leaderboard",
-        Score:             "10",
-        Message:           "Impresionante",
-        MembershipDuration:"3",
-		EligibleCompanies: "Building Block Fitness",
-        ExpiryDate:        "5th Dec 2022",
-    }
+	var newMembershipToken membershipToken
 
-    txResp, transerr := cosmos.BroadcastTx(account, msg)
-    if transerr != nil {
-        log.Fatal(transerr)
-    }
+	if err := c.BindJSON(&newMembershipToken); err != nil {
+		return
+	}
 
-    fmt.Print("MsgCreateMembershipToken:\n\n")
-    fmt.Println(txResp)
+	msg := &types.MsgCreateMembershipToken{
+		Creator:            addr,
+		Timestamp:          newMembershipToken.Timestamp,
+		ActivityName:       newMembershipToken.ActivityName,
+		Score:              newMembershipToken.Score,
+		Message:            newMembershipToken.Message,
+		MembershipDuration: newMembershipToken.MembershipDuration,
+		EligibleCompanies:  newMembershipToken.EligibleCompanies,
+		ExpiryDate:         newMembershipToken.ExpiryDate,
+	}
+
+	txResp, transerr := cosmos.BroadcastTx(account, msg)
+	if transerr != nil {
+		log.Fatal(transerr)
+	}
+
+	fmt.Print("MsgCreateMembershipToken:\n\n")
+	fmt.Println(txResp)
 
 	msgStatus := &types.MsgCreateMembershipTokenStatus{
-        Creator:           addr,
-		TokenID:           0,
-		Timestamp:         "2 Nov 2022",
-		Status:            "Valid",
-    }
+		Creator:   addr,
+		TokenID:   0,
+		Timestamp: newMembershipToken.Timestamp,
+		Status:    "Valid",
+	}
 
-    txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
-    if transerrStatus != nil {
-        log.Fatal(transerrStatus)
-    }
+	txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
+	if transerrStatus != nil {
+		log.Fatal(transerrStatus)
+	}
 
-    fmt.Print("MsgCreateMembershipTokenStatus:\n\n")
-    fmt.Println(txRespStatus)
+	fmt.Print("MsgCreateMembershipTokenStatus:\n\n")
+	fmt.Println(txRespStatus)
 
 	c.IndentedJSON(http.StatusOK, txResp)
 
 }
 
 func createDiscountToken(c *gin.Context) {
-    
-    // Define a message to create a discount token
-    msg := &types.MsgCreateDiscountToken{
-        Creator:           addr,
-	 	Timestamp:         "2 Nov 2022",
-        ActivityName:      "Learn to make tacos",
-        Score:             "10",
-        Message:           "Excelente",
-        DiscountValue:     "5",
-		EligibleCompanies: "Cooking Academy",
-        ItemType:          "protein burrito cooking class",
-        ExpiryDate:        "5th Dec 2022",
-    }
+	var newDiscountToken discountToken
 
-    txResp, transerr := cosmos.BroadcastTx(account, msg)
-    if transerr != nil {
-        log.Fatal(transerr)
-    }
+	if err := c.BindJSON(&newDiscountToken); err != nil {
+		return
+	}
 
-    // Print response from broadcasting a transaction
-    fmt.Print("MsgCreateDiscountToken:\n\n")
-    fmt.Println(txResp)
+	// Define a message to create a discount token
+	msg := &types.MsgCreateDiscountToken{
+		Creator:           addr,
+		Timestamp:         newDiscountToken.Timestamp,
+		ActivityName:      newDiscountToken.ActivityName,
+		Score:             newDiscountToken.Score,
+		Message:           newDiscountToken.Message,
+		DiscountValue:     newDiscountToken.DiscountValue,
+		EligibleCompanies: newDiscountToken.EligibleCompanies,
+		ItemType:          newDiscountToken.ItemType,
+		ExpiryDate:        newDiscountToken.ExpiryDate,
+	}
+
+	txResp, transerr := cosmos.BroadcastTx(account, msg)
+	if transerr != nil {
+		log.Fatal(transerr)
+	}
+
+	// Print response from broadcasting a transaction
+	fmt.Print("MsgCreateDiscountToken:\n\n")
+	fmt.Println(txResp)
 
 	msgStatus := &types.MsgCreateDiscountTokenStatus{
-        Creator:           addr,
-		TokenID:           0,
-		Timestamp:         "2 Nov 2022",
-		Status:            "Valid",
-    }
+		Creator:   addr,
+		TokenID:   0,
+		Timestamp: newDiscountToken.Timestamp,
+		Status:    "Valid",
+	}
 
-    txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
-    if transerrStatus != nil {
-        log.Fatal(transerrStatus)
-    }
+	txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
+	if transerrStatus != nil {
+		log.Fatal(transerrStatus)
+	}
 
-    fmt.Print("MsgCreateDiscountTokenStatus:\n\n")
-    fmt.Println(txRespStatus)
+	fmt.Print("MsgCreateDiscountTokenStatus:\n\n")
+	fmt.Println(txRespStatus)
 
 	c.IndentedJSON(http.StatusOK, txResp)
 }
 
 func deleteDiscountTokenStatus(c *gin.Context) {
 
+	var newDiscountTokenStatus DiscountTokenStatus
+
+	if err := c.BindJSON(&newDiscountTokenStatus); err != nil {
+		return
+	}
+
 	msgStatus := &types.MsgDeleteDiscountTokenStatus{
-        Creator:               addr,
-		DiscountTokenStatusID: 0,
-		TokenID:               0,
-    }
+		Creator:               addr,
+		DiscountTokenStatusID: newDiscountTokenStatus.ID,
+		TokenID:               newDiscountTokenStatus.TokenID,
+	}
 
-    txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
-    if transerrStatus != nil {
-        log.Fatal(transerrStatus)
-    }
+	txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
+	if transerrStatus != nil {
+		log.Fatal(transerrStatus)
+	}
 
-    fmt.Print("MsgDeleteDiscountTokenStatus:\n\n")
-    fmt.Println(txRespStatus)
+	fmt.Print("MsgDeleteDiscountTokenStatus:\n\n")
+	fmt.Println(txRespStatus)
 
 	msgNewStatus := &types.MsgCreateDiscountTokenStatus{
-        Creator:           addr,
-		TokenID:           0,
-		Timestamp:         "2 Nov 2022",
-		Status:            "Invalid",
-    }
+		Creator:   addr,
+		TokenID:   newDiscountTokenStatus.TokenID,
+		Timestamp: newDiscountTokenStatus.Timestamp,
+		Status:    "Invalid",
+	}
 
-    txRespNewStatus, transerrNewStatus := cosmos.BroadcastTx(account, msgNewStatus)
-    if transerrNewStatus != nil {
-        log.Fatal(transerrStatus)
-    }
+	txRespNewStatus, transerrNewStatus := cosmos.BroadcastTx(account, msgNewStatus)
+	if transerrNewStatus != nil {
+		log.Fatal(transerrStatus)
+	}
 
-    fmt.Print("MsgCreateDiscountTokenStatus:\n\n")
-    fmt.Println(txRespNewStatus)
+	fmt.Print("MsgCreateDiscountTokenStatus:\n\n")
+	fmt.Println(txRespNewStatus)
 
 	c.IndentedJSON(http.StatusOK, txRespStatus)
 }
 
 func deleteMembershipTokenStatus(c *gin.Context) {
 
+	var newMembershipTokenStatus MembershipTokenStatus
+
+	if err := c.BindJSON(&newMembershipTokenStatus); err != nil {
+		return
+	}
+
 	msgStatus := &types.MsgDeleteMembershipTokenStatus{
-        Creator:               addr,
-		MembershipTokenStatusID: 0,
-		TokenID:                 0,
-    }
+		Creator:                 addr,
+		MembershipTokenStatusID: newMembershipTokenStatus.ID,
+		TokenID:                 newMembershipTokenStatus.TokenID,
+	}
 
-    txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
-    if transerrStatus != nil {
-        log.Fatal(transerrStatus)
-    }
+	txRespStatus, transerrStatus := cosmos.BroadcastTx(account, msgStatus)
+	if transerrStatus != nil {
+		log.Fatal(transerrStatus)
+	}
 
-    fmt.Print("MsgDeleteMembershipTokenStatus:\n\n")
-    fmt.Println(txRespStatus)
+	fmt.Print("MsgDeleteMembershipTokenStatus:\n\n")
+	fmt.Println(txRespStatus)
 
 	msgNewStatus := &types.MsgCreateMembershipTokenStatus{
-        Creator:           addr,
-		TokenID:           0,
-		Timestamp:         "2 Nov 2022",
-		Status:            "Invalid",
-    }
+		Creator:   addr,
+		TokenID:   newMembershipTokenStatus.TokenID,
+		Timestamp: newMembershipTokenStatus.Timestamp,
+		Status:    "Invalid",
+	}
 
-    txRespNewStatus, transerrNewStatus := cosmos.BroadcastTx(account, msgNewStatus)
-    if transerrNewStatus != nil {
-        log.Fatal(transerrStatus)
-    }
+	txRespNewStatus, transerrNewStatus := cosmos.BroadcastTx(account, msgNewStatus)
+	if transerrNewStatus != nil {
+		log.Fatal(transerrStatus)
+	}
 
-    fmt.Print("MsgCreateMembershipTokenStatus:\n\n")
-    fmt.Println(txRespNewStatus)
-
+	fmt.Print("MsgCreateMembershipTokenStatus:\n\n")
+	fmt.Println(txRespNewStatus)
 
 	c.IndentedJSON(http.StatusOK, txRespStatus)
 }
 
-func main() {
-    router := gin.Default()
-    router.Use(CORSMiddleware())
+func getAddr(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, addr)
+}
 
-    router.GET("/discountToken", createDiscountToken)
-    router.GET("/membershipToken", createMembershipToken)
-    router.GET("/deleteDiscountTokenStatus", deleteDiscountTokenStatus)
-	router.GET("/deleteMembershipTokenStatus", deleteMembershipTokenStatus)
+func main() {
+	router := gin.Default()
+	router.Use(CORSMiddleware())
+
+	router.GET("/addr", getAddr)
+	router.POST("/discountToken", createDiscountToken)
+	router.POST("/membershipToken", createMembershipToken)
+	router.POST("/discountTokenStatus", deleteDiscountTokenStatus)
+	router.POST("/membershipTokenStatus", deleteMembershipTokenStatus)
 	router.Run("localhost:8080")
 }
