@@ -8,8 +8,12 @@ This backend takes tx request (post) from angular web apps and broadcast them to
 
 ## How to run
 
+**Import types from local mitoblockchain / mitoblockchaindev or from remote github repo. Please see the 'replace' declaration in go.mod file**
+
 Ensure the go.mod file matches the source code in module:
+
 `go mod tidy`
 
 Run:
+
 `go run .` or `go run main.go`
