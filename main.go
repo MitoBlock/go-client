@@ -69,7 +69,7 @@ type DiscountTokenStatus struct {
 	TokenID   uint64 `json:"token_id"`
 	ID        uint64 `json:"id"`
 	Timestamp string `json:"timestamp"`
-	status    string `json:"status"`
+	Status    string `json:"status"`
 }
 
 // membership token from angular
@@ -88,7 +88,7 @@ type MembershipTokenStatus struct {
 	TokenID   uint64 `json:"token_id"`
 	ID        uint64 `json:"id"`
 	Timestamp string `json:"timestamp"`
-	status    string `json:"status"`
+	Status    string `json:"status"`
 }
 
 var tokens = []discountToken{
