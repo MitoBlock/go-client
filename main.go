@@ -69,6 +69,7 @@ type DiscountTokenStatus struct {
 	TokenID   uint64 `json:"token_id"`
 	ID        uint64 `json:"id"`
 	Timestamp string `json:"timestamp"`
+	status    string `json:"status"`
 }
 
 // membership token from angular
@@ -87,6 +88,7 @@ type MembershipTokenStatus struct {
 	TokenID   uint64 `json:"token_id"`
 	ID        uint64 `json:"id"`
 	Timestamp string `json:"timestamp"`
+	status    string `json:"status"`
 }
 
 var tokens = []discountToken{
@@ -220,7 +222,7 @@ func deleteDiscountTokenStatus(c *gin.Context) {
 		Creator:   addr,
 		TokenID:   newDiscountTokenStatus.TokenID,
 		Timestamp: newDiscountTokenStatus.Timestamp,
-		Status:    "Invalid",
+		Status:    newDiscountTokenStatus.Status,
 	}
 
 	txRespNewStatus, transerrNewStatus := cosmos.BroadcastTx(account, msgNewStatus)
@@ -260,7 +262,7 @@ func deleteMembershipTokenStatus(c *gin.Context) {
 		Creator:   addr,
 		TokenID:   newMembershipTokenStatus.TokenID,
 		Timestamp: newMembershipTokenStatus.Timestamp,
-		Status:    "Invalid",
+		Status:    newMembershipTokenStatus.Status,
 	}
 
 	txRespNewStatus, transerrNewStatus := cosmos.BroadcastTx(account, msgNewStatus)
