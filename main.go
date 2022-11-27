@@ -49,8 +49,6 @@ var accountName = "bob"
 var account, accounterr = cosmos.Account(accountName)
 
 var addr, addrerr = account.Address(addressPrefix)
-	
-var queryClient = types.NewQueryClient(cosmos.Context())
 
 // discount token from angular
 type discountToken struct {
@@ -89,19 +87,6 @@ type MembershipTokenStatus struct {
 	ID        uint64 `json:"id"`
 	Timestamp string `json:"timestamp"`
 	Status    string `json:"status"`
-}
-
-var tokens = []discountToken{
-	{
-		Timestamp:         "timestamp",
-		ActivityName:      "activity_name",
-		Score:             "10",
-		Message:           "message",
-		DiscountValue:     "discount_value",
-		EligibleCompanies: "eligible_companies",
-		ItemType:          "item_type",
-		ExpiryDate:        "expiry_date",
-	},
 }
 
 func createMembershipToken(c *gin.Context) {
