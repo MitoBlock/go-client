@@ -6,9 +6,15 @@ Backend for web apps to demonstrate the use of blockchain.
 
 This backend takes tx request (post) from angular web apps and broadcast them to blockchain. This backend was late decision since the intial idea was to use ts-client and make a web sdk for web apps  but it failed due to lot of current unstability. When we reached to cosmos developers, they said that they are still working on it. The other alternative was to use the CosmJS but it doesn't have proper documentation and it was too late. Moreover, we are getting an address of demo account (bob) from blockchain. In real life, web apps will have thier own user database that would have addresses of users stored on them and they will use those.
 
+## Technologies
+Gin, Cosmos SDK and Cosmos client (Ignite)
+
+## Contributors
+Daljeet Singh and Sukhdev Banwait
+
 ## How to run
 
-**Import types from local mitoblockchain / mitoblockchaindev or from remote github repo. Please see the 'replace' declaration in go.mod file**
+**Import types from local mitoblockchain / mitoblockchaindev or from remote github repo. Please see the 'replace' declaration in go.mod file. Moreover, make sure that blockchain is running**
 
 Ensure the go.mod file matches the source code in module:
 
